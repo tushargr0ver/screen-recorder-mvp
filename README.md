@@ -2,7 +2,7 @@
 
 A full-featured browser-based screen recording application built with Next.js, TypeScript, and ffmpeg.wasm.
 
-<video src="demo.webm" autoplay loop muted playsinline width="100%"></video>
+![Screen Recorder MVP Demo](screenshots/home.png)
 
 ## Features
 
