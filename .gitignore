@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# database
+/data/
+*.db
+*.sqlite
+*.sqlite3
+
+# uploaded videos
+/public/uploads/
+
+# screenshots (for README, can commit manually if needed)
+/screenshots/

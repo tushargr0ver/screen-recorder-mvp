@@ -1,36 +1,200 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Screen Recorder MVP
+
+A full-featured browser-based screen recording application built with Next.js, TypeScript, and ffmpeg.wasm.
+
+<video src="demo.webm" autoplay loop muted playsinline width="100%"></video>
+
+## Features
+
+### 🎬 Screen Recording
+- Record screen with system audio and microphone
+- Real-time recording indicator with timer
+- Pause/resume recording functionality
+- MediaRecorder API for native browser recording
+
+### ✂️ Video Trimming
+- Client-side video trimming using ffmpeg.wasm
+- Dual-range slider for precise start/end selection
+- Preview trimmed segment before applying
+- Zero server load - all processing in browser
+
+### 🔗 Upload & Share
+- Upload recorded videos to server storage
+- Generate unique shareable links
+- Public video player page
+- One-click copy to clipboard
+
+### 📊 Analytics
+- Track view counts per video
+- Monitor watch completion percentage
+- Record watch duration
+- SQLite database for persistence
+
+## Tech Stack
+
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **Styling**: Tailwind CSS 4 with custom dark theme
+- **Video Processing**: ffmpeg.wasm (client-side)
+- **Database**: SQLite with better-sqlite3
+- **Storage**: Local file system (mocked S3)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ or Bun 1.0+
+- Modern browser with MediaRecorder support
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/tushargr0ver/screen-recorder-mvp.git
+cd screen-recorder-mvp
+
+# Install dependencies
+bun install
+# or
+npm install
+
+# Trust better-sqlite3 postinstall (for native compilation)
+bun pm trust better-sqlite3
+
+# Start development server
+bun run dev
+# or
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to use the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+├── api/
+│   ├── analytics/route.ts  # View & completion tracking
+│   └── upload/route.ts     # Video upload handling
+├── components/
+│   ├── ScreenRecorder.tsx  # Main recording UI
+│   ├── VideoPreview.tsx    # Recorded video display
+│   ├── VideoTrimmer.tsx    # ffmpeg.wasm trimming
+│   ├── UploadButton.tsx    # Upload with progress
+│   ├── ShareLink.tsx       # Share link display
+│   └── WatchTracker.tsx    # Analytics tracker
+├── contexts/
+│   └── RecordingContext.tsx # Recording state management
+├── lib/
+│   └── db.ts               # SQLite database layer
+├── watch/
+│   └── [id]/               # Public video player
+├── globals.css             # Dark theme styling
+├── layout.tsx
+└── page.tsx                # Main app flow
+```
 
-## Learn More
+## Architecture Decisions
 
-To learn more about Next.js, take a look at the following resources:
+### Client-Side Video Processing
+Using `ffmpeg.wasm` for video trimming means:
+- ✅ No server-side video processing needed
+- ✅ Works on serverless platforms (Vercel)
+- ✅ Lower infrastructure costs
+- ⚠️ Initial load time for ffmpeg (3-5MB)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### SQLite for Analytics
+Chose SQLite for simplicity:
+- ✅ Zero configuration required
+- ✅ File-based persistence
+- ✅ Perfect for MVP/prototyping
+- ⚠️ Single-instance only in production
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Local File Storage
+Videos stored in `public/uploads/`:
+- ✅ Simple implementation
+- ✅ Served directly by Next.js
+- ⚠️ Must migrate to S3/R2 for production
 
-## Deploy on Vercel
+## Production Improvements
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+For a production-ready version, consider:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Infrastructure
+- [ ] Replace local storage with S3/R2/GCS
+- [ ] Use PostgreSQL instead of SQLite
+- [ ] Add CDN for video delivery
+- [ ] Deploy behind a load balancer
+
+### Features
+- [ ] User authentication & accounts
+- [ ] Video transcoding for multiple qualities
+- [ ] Custom video player with chapters
+- [ ] Video annotations/comments
+- [ ] Team workspaces
+
+### Performance
+- [ ] Lazy load ffmpeg.wasm
+- [ ] Video chunked upload
+- [ ] HLS/DASH streaming
+- [ ] Rate limiting on APIs
+
+### Security
+- [ ] Signed upload URLs
+- [ ] Video access controls
+- [ ] CORS configuration
+- [ ] Input validation
+
+## API Reference
+
+### POST /api/upload
+Upload a video file.
+
+**Request**: `multipart/form-data` with `video` field
+
+**Response**:
+```json
+{
+  "success": true,
+  "id": "uuid",
+  "shareUrl": "/watch/uuid",
+  "filename": "uuid.webm"
+}
+```
+
+### POST /api/analytics
+Record analytics events.
+
+**Request**:
+```json
+{
+  "action": "view" | "watch",
+  "videoId": "uuid",
+  "watchPercentage": 75,
+  "watchDuration": 120,
+  "completed": false
+}
+```
+
+### GET /api/analytics?videoId=uuid
+Get video statistics.
+
+**Response**:
+```json
+{
+  "views": 42,
+  "completions": 10,
+  "avgWatchPercentage": 68.5,
+  "totalWatchTime": 3600
+}
+```
+
+## Browser Support
+
+- Chrome 88+
+- Edge 88+
+- Firefox 78+
+- Safari 14+ (limited screen capture)
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
