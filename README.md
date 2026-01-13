@@ -195,6 +195,4 @@ Get video statistics.
 - Firefox 78+
 - Safari 14+ (limited screen capture)
 
-## License
 
-MIT License - see [LICENSE](LICENSE) for details.
